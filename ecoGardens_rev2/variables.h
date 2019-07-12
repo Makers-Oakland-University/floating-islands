@@ -3,7 +3,7 @@
 
 bool dayMode = true;
 
-int distance;
+volatile int distance;
 bool triggerAnimation = false;
 int wiggleCount = 0;
 

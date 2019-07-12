@@ -16,6 +16,7 @@ void updateServos() {
   S4.write(servoPos[3]);
 }
 void calcDistance() {
+  cli();
   // Start Ranging -Generating a trigger of 10us burst
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
@@ -23,12 +24,34 @@ void calcDistance() {
 
   // Distance Calculation
   distance = pulseIn(ECHO_PIN, HIGH);
-  distance = distance / 58;
+  distance = (int) distance / 58;
+  Serial.println(distance);
+  sei();
   /* The speed of sound is 340 m/s or 29 us per cm.
      The Ultrasonic burst travels out & back.
      So to find the distance of object we divide by 58  */
 }
 
+
+void calcDistance2() {
+  cli();
+  // Clears the trigPin
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  int duration = pulseIn(ECHO_PIN, HIGH);
+  // Calculating the distance
+  int  d = (int) duration * 0.034 / 2;
+  if (d > 0 && d < 200) {
+    distance = d;
+  }
+  // Prints the distance on the Serial Monitor
+  sei();
+}
 void colorWipe(Adafruit_NeoPixel &strip, uint32_t c, uint8_t wait) {
   for (int i = 0; i < strip.numPixels(); i++) {
     strip.setPixelColor(i, c);

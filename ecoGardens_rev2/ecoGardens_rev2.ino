@@ -1,11 +1,13 @@
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
+#include <avr/io.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
 
 #include "declarations.h"
 #include "variables.h"
+
 
 Servo S1;
 Servo S2;
@@ -16,7 +18,9 @@ Adafruit_NeoPixel stripL1 = Adafruit_NeoPixel(L1_COUNT, L1_PIN);
 
 void setup() {
 
-  //   Serial.begin(9600);
+  TCCR2B |= (1 << 2) | (1 << 1) | (0 << 0);
+
+  Serial.begin(9600);
   S1.attach(S1_PIN);
   S2.attach(S2_PIN);
   S3.attach(S3_PIN);
@@ -43,9 +47,9 @@ void setup() {
 
 void loop() {
   currentTime = millis();
-
+  //  Serial.println(distance);
   // Sensor for triggered animation
-  calcDistance();
+  calcDistance2();
   // Serial.print(distance);
   if ((distance > 0) && (distance <= DISTANCE_THRESHOLD)) {
     wiggleCount = 0;
@@ -177,6 +181,3 @@ void loop() {
 
 
 }
-
-
-
