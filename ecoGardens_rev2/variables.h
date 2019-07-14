@@ -42,7 +42,16 @@ RGB colorsL1[L1_COUNT] = {
   {red.r, red.g, red.b}, // 22, lamp
 };
 
-int servoPos[4] = {85, 0, 0, 0};
+//variables for servo control using adafruit pwm board
+//int servoPos[4] = {85, 0, 0, 0};
+uint8_t servonum = 4;
+int positions[] = {0, 0, 0, 0};
+int moveTo[] = {186, 0, 0, 0};
+int speeds[] = {2, 2, 2, 2};
+int servoUpdateCount = 0;
+
+int consecutiveEventTriggers = 0; 
+
 
 long currentTime;
 

@@ -1,5 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
+#include <Adafruit_PWMServoDriver.h>
 #include <avr/io.h>
 #ifdef __AVR__
 #include <avr/power.h>
@@ -8,34 +9,25 @@
 #include "declarations.h"
 #include "variables.h"
 
-
-Servo S1;
-Servo S2;
-Servo S3;
-Servo S4;
-
 Adafruit_NeoPixel stripL1 = Adafruit_NeoPixel(L1_COUNT, L1_PIN);
+
+//I2C PWM Control Board
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
 
 void setup() {
 
-  TCCR2B |= (1 << 2) | (1 << 1) | (0 << 0);
-
   Serial.begin(9600);
-  S1.attach(S1_PIN);
-  S2.attach(S2_PIN);
-  S3.attach(S3_PIN);
-  S4.attach(S4_PIN);
-
-  S1.write(90);
-  S2.write(90);
-  S3.write(90);
-  S4.write(90);
 
   pinMode(ECHO_PIN, INPUT);
   pinMode(TRIG_PIN, OUTPUT);
   randomSeed(analogRead(0));
 
   stripL1.begin();
+
+  //begin the connection to the I2C servo control board
+  pwm.begin();
+  pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
 
   stripL1.setBrightness(255);
   stripL1.show();
@@ -47,21 +39,38 @@ void setup() {
 
 void loop() {
   currentTime = millis();
-  //  Serial.println(distance);
+  ServoUpdate();
+  Serial.print(distance);
+
   // Sensor for triggered animation
   calcDistance2();
+
   // Serial.print(distance);
-  if ((distance > 0) && (distance <= DISTANCE_THRESHOLD)) {
-    wiggleCount = 0;
-    triggerAnimation = true;
+
+  /*the event requires a specified number of triggers in order to occur. this was added to
+     prevent the solar panels from almost constantly being in the event state
+     REQUIRED_EVENT_TRIGGERS of 25 works ok, the ultrasonic sensor has way too much noise
+  */
+  if (distance > 0 && (distance <= DISTANCE_THRESHOLD)) {
+    consecutiveEventTriggers++;
+    if (consecutiveEventTriggers > REQUIRED_EVENT_TRIGGERS) {
+      wiggleCount = 0;
+      triggerAnimation = true;
+    }
+
+  } else {
+    consecutiveEventTriggers = 0;
   }
-  // Serial.print(" | ");
-  // Serial.println(triggerAnimation);
+
+  Serial.print(" | ");
+  Serial.println(triggerAnimation);
   if (dayMode == true) {
-    servoPos[0] = 92;
+    //    servoPos[0] = 92;
+    moveTo[0] = 186;
   }
   else if (dayMode == false) {
-    servoPos[0] = 90;
+    //servoPos[0];
+    moveTo[0] = 180;
   }
 
   // Write values to spin servos
@@ -70,13 +79,13 @@ void loop() {
       // s4 - 140 to 180
       // s3 - 140 to 180
       // s2 - 140 to 180
-      if (servoPos[1] < 170) {
+      if (positions[1] < 170) {
         servoPositive = true;
       }
-      else if ((servoPos[1] == 170) && (servoPositive == false)) {
+      else if ((positions[1] == 170) && (servoPositive == false)) {
         servoPositive = true;
       }
-      else if ((servoPos[1] == 180)) {
+      else if ((positions[1] == 180)) {
         servoPositive = false;
         wiggleCount += 1;
       }
@@ -88,22 +97,29 @@ void loop() {
     }
 
     else if (triggerAnimation == false) {
-      if (servoPos[1] == 0) {
+      if (positions[1] == 0) {
         servoPositive = true;
       }
-      else if (servoPos[1] == 180) {
+      else if (positions[1] == 180) {
         servoPositive = false;
       }
     }
     if (servoPositive == true) {
-      servoPos[1] += 1;
-      servoPos[2] += 1;
-      servoPos[3] += 1;
+      //      servoPos[1] += 1;
+      //      servoPos[2] += 1;
+      //      servoPos[3] += 1;
+      moveTo[1] += 1;
+      moveTo[2] += 1;
+      moveTo[3] += 1;
     }
     else if (servoPositive == false) {
-      servoPos[1] -= 1;
-      servoPos[2] -= 1;
-      servoPos[3] -= 1;
+      //      servoPos[1] -= 1;
+      //      servoPos[2] -= 1;
+      //      servoPos[3] -= 1;
+
+      moveTo[1] -= 1;
+      moveTo[2] -= 1;
+      moveTo[3] -= 1;
     }
     updateServos();
     lastServoWriteTime = currentTime;

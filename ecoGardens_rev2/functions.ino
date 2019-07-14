@@ -7,16 +7,18 @@ void updateLEDs() {
 
 
 void updateServos() {
-  S1.write(servoPos[0]);
-  delay(5);
-  S2.write(servoPos[1]);
-  delay(5);
-  S3.write(servoPos[2]);
-  delay(5);
-  S4.write(servoPos[3]);
+  //look, i already wrote this code before this saves me like 10 minutes of hunting down useless references
+  ServoUpdate();
 }
+
 void calcDistance() {
   cli();
+  int totalDistance = 0; 
+
+/*the solar pannels kept getting stuck in their loop due to inconsistent reads from the ultrasonic sensor 
+ * 
+ */
+  
   // Start Ranging -Generating a trigger of 10us burst
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
@@ -26,13 +28,19 @@ void calcDistance() {
   distance = pulseIn(ECHO_PIN, HIGH);
   distance = (int) distance / 58;
   Serial.println(distance);
-  sei();
+
   /* The speed of sound is 340 m/s or 29 us per cm.
      The Ultrasonic burst travels out & back.
      So to find the distance of object we divide by 58  */
+    sei();
+
+ 
 }
 
 
+/*OH MY GOD its like exactly the same thing as the last one
+ * except this one works so we add the number 2 at the end, nobody will ever notice
+ */
 void calcDistance2() {
   cli();
   // Clears the trigPin
